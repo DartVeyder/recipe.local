@@ -11,6 +11,10 @@ class Ingredient
         $this->db = Database::getInstance();
     }
 
+    public  function all(){
+        $query = $this->db->query("SELECT * FROM ingredients");
+        return $query->fetchAll(PDO::FETCH_ASSOC);
+    }
     public function allToRecipe($recipeId)
     {
         // Використовуємо метод prepare замість query

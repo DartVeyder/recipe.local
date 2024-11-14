@@ -67,7 +67,7 @@ class Recipe
 
     public function find($id)
     {
-        $query = $this->db->prepare("SELECT  r.title, r.image, r.description, r.created_at, r.views, c.name as category_name, COUNT(rv.id) AS total_reviews , r.instructions as instructions FROM recipes r 
+        $query = $this->db->prepare("SELECT r.id,r.category_id, r.title, r.image, r.description, r.created_at, r.views, c.name as category_name, COUNT(rv.id) AS total_reviews , r.instructions as instructions FROM recipes r 
                 LEFT JOIN categories c ON  r.category_id = c.id 
                 LEFT JOIN reviews rv ON  rv.recipe_id  = r.id  
                 WHERE  r.id = :id GROUP BY r.id");
@@ -100,6 +100,39 @@ class Recipe
         }
     }
 
+    public function update($id, $data)
+    {
+
+        // Підготовка SQL запиту для оновлення даних
+        $query = "UPDATE recipes 
+              SET title = :title, 
+                  description = :description, 
+                  instructions = :instructions, 
+                  image = :image, 
+                  category_id = :category_id, 
+                  user_id = :user_id 
+              WHERE id = :id";
+
+        // Підготовка та виконання запиту
+        $stmt = $this->db->prepare($query);
+
+        // Прив'язка значень
+        $stmt->bindParam(':title', $data['title'], PDO::PARAM_STR);
+        $stmt->bindParam(':description', $data['description'], PDO::PARAM_STR);
+        $stmt->bindParam(':instructions', $data['instructions'], PDO::PARAM_STR);
+        $stmt->bindParam(':image', $data['image'], PDO::PARAM_STR);
+        $stmt->bindParam(':category_id', $data['category_id'], PDO::PARAM_INT);
+        $stmt->bindParam(':user_id', $data['user_id'], PDO::PARAM_INT);
+        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+
+        // Виконання запиту
+        if ($stmt->execute()) {
+            return true; // Успішне оновлення
+        } else {
+            return false; // Помилка
+        }
+    }
+
     // Метод для видалення рецепта
     public function delete($id)
     {
@@ -115,5 +148,16 @@ class Recipe
         $query->bindParam(':id', $id, PDO::PARAM_INT);
 
         return $query->execute();
+    }
+
+    public function incrementViews($id)
+    {
+        // SQL запит для збільшення кількості переглядів
+        $query = "UPDATE recipes SET views = views + 1 WHERE id = :id";
+
+        $stmt = $this->db->prepare($query);
+        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+
+        return $stmt->execute();  // Повертає true, якщо успішно
     }
 }

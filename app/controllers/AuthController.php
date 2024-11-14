@@ -13,44 +13,85 @@ class AuthController  extends  Controller
 
     public function register()
     {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $username = $_POST['name'];
-            $email = $_POST['email'];
-            $password = $_POST['password'];
-            $confirmPassword = $_POST['confirm_password'];
+        $errors = []; // Масив для зберігання помилок
 
-            if ($password === $confirmPassword) {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $username = trim($_POST['name']);
+            $email = trim($_POST['email']);
+            $password = trim($_POST['password']);
+            $confirmPassword = trim($_POST['confirm_password']);
+
+            // Перевірка полів
+            if (empty($username)) {
+                $errors['name'] = "Ім'я користувача не може бути порожнім.";
+            }
+
+            if (empty($email)) {
+                $errors['email'] = "Електронна пошта не може бути порожньою.";
+            } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $errors['email'] = "Невірний формат електронної пошти.";
+            }
+
+            if (empty($password)) {
+                $errors['password'] = "Пароль не може бути порожнім.";
+            }
+
+            if (empty($confirmPassword)) {
+                $errors['confirm_password'] = "Підтвердження пароля не може бути порожнім.";
+            } elseif ($password !== $confirmPassword) {
+                $errors['confirm_password'] = "Паролі не співпадають.";
+            }
+
+            // Якщо помилок немає, реєструємо користувача
+            if (empty($errors)) {
                 if ($this->user->register($username, $email, $password)) {
                     header("Location: ?url=auth/login");
                     exit;
                 } else {
-                    echo "Помилка при реєстрації.";
+                    $errors['general'] = "Помилка при реєстрації.";
                 }
-            } else {
-                echo "Паролі не співпадають.";
             }
         }
-        $this->view('auth/register');
+
+        // Відображаємо форму з помилками
+        $this->view('auth/register', ['errors' => $errors]);
     }
+
 
     public function login()
     {
+        $errors = []; // Масив для зберігання помилок
+
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $email = $_POST['email'];
-            $password = $_POST['password'];
+            $email = trim($_POST['email']);
+            $password = trim($_POST['password']);
 
-            $user = $this->user->login($email, $password);
+            // Перевірка полів
+            if (empty($email)) {
+                $errors['email'] = "Електронна пошта не може бути порожньою.";
+            }
 
-            if ($user) {
-                $_SESSION['user_id'] = $user['id'];
-                header("Location: ?url=recipes/index");
-                exit;
-            } else {
-                echo "Неправильний логін або пароль.";
+            if (empty($password)) {
+                $errors['password'] = "Пароль не може бути порожнім.";
+            }
+
+            // Якщо немає помилок, продовжуємо з логіном
+            if (empty($errors)) {
+                $user = $this->user->login($email, $password);
+
+                if ($user) {
+                    $_SESSION['user_id'] = $user['id'];
+                    $_SESSION['user_name'] = $user['name'];
+                    header("Location: ?url=recipes/index");
+                    exit;
+                } else {
+                    $errors['general'] = "Неправильний логін або пароль.";
+                }
             }
         }
 
-        require_once $_SERVER['DOCUMENT_ROOT'] . '/app/views/auth/login.php';
+        // Відображаємо форму з помилками
+        $this->view('auth/login', ['errors' => $errors]);
     }
 
     public function logout()

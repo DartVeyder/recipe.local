@@ -11,20 +11,20 @@
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/">Головна</a></li>
-                <li class="breadcrumb-item active" aria-current="page"> Добавити рецепт</li>
+                <li class="breadcrumb-item active" aria-current="page">Оновити рецепт</li>
             </ol>
         </nav>
     </div>
     <div class="form mx-auto d-block w-100">
         <div class="page-header text-center">
-            <h1>Добавити рецепт</h1>
+            <h1>Оновити рецепт</h1>
         </div>
 
-        <form id="recipe-form" action="?url=recipes/store" method="post" enctype="multipart/form-data">
+        <form id="recipe-form" action="?url=recipes/update/<?php echo $recipe['id']; ?>" method="post" enctype="multipart/form-data">
             <fieldset>
                 <div class="form-group mt-3">
                     <label for="title">Назва</label>
-                    <input type="text" class="form-control" name="title" id="title" value="<?php echo htmlspecialchars($_POST['title'] ?? ''); ?>">
+                    <input type="text" class="form-control" name="title" id="title" value="<?php echo htmlspecialchars($recipe['title'] ?? ''); ?>">
                     <?php if (!empty($errors['title'])): ?>
                         <p class="text-danger"><?php echo $errors['title']; ?></p>
                     <?php endif; ?>
@@ -32,7 +32,7 @@
 
                 <div class="form-group mt-3">
                     <label for="description">Опис</label>
-                    <textarea class="form-control" name="description" id="description" rows="3"><?php echo htmlspecialchars($_POST['description'] ?? ''); ?></textarea>
+                    <textarea class="form-control" name="description" id="description" rows="3"><?php echo htmlspecialchars($recipe['description'] ?? ''); ?></textarea>
                     <?php if (!empty($errors['description'])): ?>
                         <p class="text-danger"><?php echo $errors['description']; ?></p>
                     <?php endif; ?>
@@ -40,7 +40,7 @@
 
                 <div class="form-group mt-3">
                     <label for="instructions">Інструкція</label>
-                    <textarea class="form-control" name="instructions" id="instructions" rows="3"><?php echo htmlspecialchars($_POST['instructions'] ?? ''); ?></textarea>
+                    <textarea class="form-control" name="instructions" id="instructions" rows="3"><?php echo htmlspecialchars($recipe['instructions'] ?? ''); ?></textarea>
                     <?php if (!empty($errors['instructions'])): ?>
                         <p class="text-danger"><?php echo $errors['instructions']; ?></p>
                     <?php endif; ?>
@@ -48,7 +48,7 @@
 
                 <div class="form-group mt-3">
                     <label for="image">Посилання на фото</label>
-                    <input type="text" class="form-control" name="image" id="image" value="<?php echo htmlspecialchars($_POST['image'] ?? ''); ?>">
+                    <input type="text" class="form-control" name="image" id="image" value="<?php echo htmlspecialchars($recipe['image'] ?? ''); ?>">
                 </div>
 
                 <div class="form-group mt-3">
@@ -56,7 +56,7 @@
                     <select class="form-select" id="category" name="category_id">
                         <option value="">Виберіть категорію</option>
                         <?php foreach ($categories as $category): ?>
-                            <option value="<?php echo $category['id']; ?>" <?php echo (isset($_POST['category_id']) && $_POST['category_id'] == $category['id']) ? 'selected' : ''; ?>>
+                            <option value="<?php echo $category['id']; ?>" <?php echo ($recipe['category_id'] == $category['id']) ? 'selected' : ''; ?>>
                                 <?php echo htmlspecialchars($category['name']); ?>
                             </option>
                         <?php endforeach; ?>
@@ -65,36 +65,13 @@
                         <p class="text-danger"><?php echo $errors['category_id']; ?></p>
                     <?php endif; ?>
                 </div>
-                <!-- Список інгредієнтів та кількості -->
+
+
                 <div class="form-group mt-3">
-                    <label for="ingredients">Інгредієнти</label>
-                    <table class="table">
-                        <thead>
-                        <tr>
-                            <th>Інгредієнт</th>
-                            <th>Кількість</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <?php foreach ($ingredients as $ingredient): ?>
-                            <tr>
-                                <td>
-                                    <input type="checkbox" name="ingredients[]" value="<?php echo $ingredient['id']; ?>">
-                                    <?php echo htmlspecialchars($ingredient['name']); ?>
-                                </td>
-                                <td>
-                                    <input type="text" name="quantities[<?php echo $ingredient['id']; ?>]" class="form-control" placeholder="Кількість">
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="form-group mt-3">
-                    <input hidden type="text" class="form-control" name="user_id" value="<?php echo  $_SESSION['user_id']?>"  >
+                    <input hidden type="text" class="form-control" name="user_id" value="<?php echo $_SESSION['user_id']; ?>" >
                 </div>
                 <div class="d-flex justify-content-between align-items-center mt-3">
-                    <button type="submit" class="btn btn-primary">Зберегти</button>
+                    <button type="submit" class="btn btn-primary">Оновити</button>
                 </div>
             </fieldset>
         </form>

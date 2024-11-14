@@ -41,7 +41,19 @@ class RecipeController extends  Controller
         }
 
         $categories = $this->category->all();
-        $this->view('recipes/create' , ['categories' => $categories]);
+        $ingredients = $this->ingredient->all();
+        $this->view('recipes/create' , ['categories' => $categories, 'ingredients'=>$ingredients]);
+    }
+
+    public function edit($id)
+    {
+        if (!isset($_SESSION['user_id'])) {
+            header("Location: /");
+            exit;
+        }
+        $recipe = $this->recipe->find($id);
+        $categories = $this->category->all();
+        $this->view('recipes/edit' , ['recipe' => $recipe, 'categories' => $categories]);
     }
 
     public function store()
@@ -87,6 +99,52 @@ class RecipeController extends  Controller
         exit();
     }
 
+    public function update($id)
+    {
+        $errors = [];
+
+        // Перевірка обов’язкових полів
+        if (empty($_POST['title'])) {
+            $errors['title'] = 'Назва обов’язкова';
+        }
+
+        if (empty($_POST['description'])) {
+            $errors['description'] = 'Опис обов’язковий';
+        }
+
+        if (empty($_POST['instructions'])) {
+            $errors['instructions'] = 'Інструкція обов’язкова';
+        }
+
+        if (empty($_POST['category_id']) || $_POST['category_id'] === 'Виберіть категорію') {
+            $errors['category_id'] = 'Категорія обов’язкова';
+        }
+
+        if (!empty($errors)) {
+            // Повертаємо користувача на форму з помилками
+            $recipe = $this->recipe->find($id);
+            $categories = $this->category->all();
+            $this->view('recipes/edit', ['errors' => $errors, 'recipe' => $recipe, 'categories' => $categories]);
+            return;
+        }
+
+        // Якщо немає помилок, оновлюємо рецепт
+        $data = [
+            'title' => $_POST['title'],
+            'description' => $_POST['description'],
+            'category_id' => $_POST['category_id'],
+            'instructions' => $_POST['instructions'],
+            'image' => $_POST['image'],
+            'user_id' => $_POST['user_id']
+        ];
+        if ($this->recipe->update($id, $data)) {
+            header('Location: ?url=recipes/index');
+            exit();
+        } else {
+            echo "Помилка при оновленні рецепту.";
+        }
+    }
+
     private function getSort()
     {
         $sorts = [
@@ -120,6 +178,9 @@ class RecipeController extends  Controller
     // Метод для відображення окремого рецепта
     public function show($id)
     {
+        // Оновлення кількості переглядів
+        $this->recipe->incrementViews($id);
+
         // Отримуємо рецепт за ID
         $recipe = $this->recipe->find($id);
         $ingredients = $this->ingredient->allToRecipe($id);

@@ -8,21 +8,7 @@
 <div class="container mt-5">
 
     <div class="row">
-        <div class="col-10">
-            <form method="GET" action="?url=recipes/index">
-                <div class="input-group mb-3 d-flex align-items-center">
-                    <input type="text" class="form-control" name="search" placeholder="Пошук" aria-label="Пошук" aria-describedby="basic-addon2" value="<?php echo htmlspecialchars($_GET['search'] ?? ''); ?>">
-                    <div class="input-group-append">
-                        <button class="btn btn-outline-secondary" type="submit">Пошук</button>
-                    </div>
-
-                    <?php if (isset($_GET['search'])): ?>
-                        <a href="?url=recipes/index" class="btn-close ms-2"></a>
-                    <?php endif; ?>
-
-                </div>
-            </form>
-        </div>
+        <?php include($_SERVER['DOCUMENT_ROOT'] . '/app/views/partials/search.php'); ?>
 
         <div class="col-2">
 
@@ -116,10 +102,10 @@
                         <img class="card-img-top" style="height: 16rem;" src="<?php echo ($recipe['image'] ? $recipe['image'] : 'assets/images/none_image.jpg'); ?>" alt="<?php echo $recipe['title']; ?>">
 
                         <div class="card-img-overlay" style="right: auto;bottom: auto;width: 100%;display: flex;align-items: center;justify-content: space-between;">
-                            <a href="#" class="btn btn-light btn-sm"><?php echo $recipe['category_name']; ?></a>
+                            <a href="?categories[]=<?php echo $recipe['category_id']; ?>" class="btn btn-light btn-sm"><?php echo $recipe['category_name']; ?></a>
                             <?php if (isset($_SESSION['user_id'])): ?>
                             <div class="action">
-                                <a href="#" class="fas fa-edit text-info"></a>
+                                <a href="?url=recipes/edit/<?php echo $recipe['id']; ?>" class="fas fa-edit text-info"></a>
                                 <a href="?url=recipes/delete/<?php echo $recipe['id']; ?>" class="fas fa-trash-alt text-danger ml-3"></a>
                             </div>
                             <?php endif; ?>
