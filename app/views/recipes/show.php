@@ -21,7 +21,7 @@
 
         <!-- Інгредієнти та інструкції -->
         <div class="row g-0">
-            <div class="col-md-6 ingredients">
+           <div class="col-md-6 ingredients">
                 <h3>Інгредієнти</h3>
                 <ul class="list-group list-group-flush">
                     <?php

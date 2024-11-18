@@ -3,6 +3,7 @@
 require_once $_SERVER['DOCUMENT_ROOT'] . '/app/models/Recipe.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/app/models/Ingredient.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/app/models/Category.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/app/models/Wishlist.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/app/controllers/Controller.php';
 class RecipeController extends  Controller
 {
@@ -14,6 +15,7 @@ class RecipeController extends  Controller
         $this->recipe = new Recipe();
         $this->ingredient = new Ingredient();
         $this->category = new Category();
+        $this->wishlist = new Wishlist();
     }
 
     public function index()
@@ -21,15 +23,25 @@ class RecipeController extends  Controller
         $searchQuery = $_GET['search'] ?? '';
         $getSorts = $this->getSort();
         $category_ids = $_GET['categories'] ?? [];
-        $recipes = $this->recipe->all( $searchQuery, $getSorts['sort'], $category_ids);
+        $ingredientGroup_ids = $_GET['ingredientGroups'] ?? [];
+        $recipes = $this->recipe->all( $searchQuery, $getSorts['sort'], $category_ids, $ingredientGroup_ids );
         $categories = $this->category->all();
+        $ingredientGroups = $this->ingredient->allGroups();
 
+        if ( isset($_SESSION['user_id'])) {
+            $countWishlist = $this->wishlist->countByUserId($_SESSION['user_id']);
+        }else{
+            $countWishlist = 0;
+        }
         // Підключаємо представлення та передаємо дані
         $this->view('recipes/index', [
             'recipes' => $recipes,
             'sorts' =>$getSorts['sorts'],
             'getSort' =>  $getSorts['sort'],
-            'categories' => $categories]);
+            'categories' => $categories,
+            'countWishlist' => $countWishlist,
+            'ingredientGroups'=>$ingredientGroups]
+            );
     }
 
     // Метод для відображення форми створення рецепта
@@ -52,35 +64,42 @@ class RecipeController extends  Controller
             exit;
         }
         $recipe = $this->recipe->find($id);
+        $ingredients = $this->ingredient->all();
         $categories = $this->category->all();
-        $this->view('recipes/edit' , ['recipe' => $recipe, 'categories' => $categories]);
+        $this->view('recipes/edit' , ['recipe' => $recipe, 'categories' => $categories, 'ingredients'=>$ingredients]);
     }
 
     public function store()
     {
         $errors = [];
 
-        // Перевірка обов’язкових полів
+        // Перевірка обов'язкових полів
         if (empty($_POST['title'])) {
-            $errors['title'] = 'Назва обов’язкова';
+            $errors['title'] = 'Назва обов\'язкова';
         }
 
         if (empty($_POST['description'])) {
-            $errors['description'] = 'Опис обов’язковий';
+            $errors['description'] = 'Опис обов\'язковий';
         }
 
         if (empty($_POST['instructions'])) {
-            $errors['instructions'] = 'Інструкція обов’язкова';
+            $errors['instructions'] = 'Інструкція обов\'язкова';
         }
 
         if (empty($_POST['category_id']) || $_POST['category_id'] === 'Виберіть категорію') {
-            $errors['category_id'] = 'Категорія обов’язкова';
+            $errors['category_id'] = 'Категорія обов\'язкова';
+        }
+        print_r($_POST);
+        // Перевірка інгредієнтів
+        if (empty($_POST['ingredients'])) {
+            $errors['ingredients'] = 'Додайте хоча б один інгредієнт';
         }
 
         if (!empty($errors)) {
             // Повертаємо користувача на форму з помилками
             $categories = $this->category->all();
-            $this->view('recipes/create',['errors' => $errors,'categories' => $categories] );
+            $ingredients = $this->ingredient->all();
+            $this->view('recipes/create', ['errors' => $errors, 'categories' => $categories, 'ingredients' => $ingredients]);
             return;
         }
 
@@ -94,10 +113,23 @@ class RecipeController extends  Controller
             'user_id' => $_POST['user_id']
         ];
 
-        $this->recipe->create($data);
+        // Зберігаємо рецепт і отримуємо його ID
+        $recipe_id = $this->recipe->create($data);
+
+        // Додавання інгредієнтів до рецепта
+        if (!empty($_POST['ingredients'])) {
+            foreach ($_POST['ingredients'] as $ingredient) {
+                if (!empty($ingredient['quantity'])) {
+                    $this->ingredient->addIngredientToRecipe($recipe_id, $ingredient['id'], $ingredient['quantity']);
+                }
+            }
+        }
+
+        // Перенаправлення на список рецептів
         header('Location: ?url=recipes/index');
         exit();
     }
+
 
     public function update($id)
     {
@@ -127,6 +159,7 @@ class RecipeController extends  Controller
             $this->view('recipes/edit', ['errors' => $errors, 'recipe' => $recipe, 'categories' => $categories]);
             return;
         }
+
 
         // Якщо немає помилок, оновлюємо рецепт
         $data = [
@@ -165,6 +198,14 @@ class RecipeController extends  Controller
                 'name' => 'За датою по зростанню',
                 'sql' => 'created_at ASC'
             ],
+            'views_asc' => [
+                'name' => 'За популярністю по спаданню',
+                'sql' => 'views ASC'
+            ],
+            'views_desc' => [
+                'name' => 'За популярністю по зростанню',
+                'sql' => 'views DESC'
+            ],
         ];
 
 
@@ -184,9 +225,13 @@ class RecipeController extends  Controller
         // Отримуємо рецепт за ID
         $recipe = $this->recipe->find($id);
         $ingredients = $this->ingredient->allToRecipe($id);
-
+        if ( isset($_SESSION['user_id'])) {
+            $countWishlist = $this->wishlist->countByUserId($_SESSION['user_id']);
+        }else{
+            $countWishlist = 0;
+        }
         // Підключаємо представлення та передаємо дані
-        $this->view('recipes/show', ['recipe' => $recipe, 'ingredients'=>$ingredients]);
+        $this->view('recipes/show', ['recipe' => $recipe, 'ingredients'=>$ingredients,'countWishlist'=>$countWishlist]);
     }
     public function delete($id)
     {

@@ -21,6 +21,10 @@ class Recipe
                 return 'created_at ASC';
             case 'date_desc':
                 return 'created_at DESC';
+            case 'views_desc':
+                return 'views DESC';
+            case 'views_asc':
+                return 'views ASC';
             default:
                 return 'title ASC'; // Значення за замовчуванням
         }
@@ -36,23 +40,50 @@ class Recipe
         }
     }
 
+    private function buildingredientGroupFilter(&$sql, &$params, $ingredientGroup_ids)
+    {
+        if (!empty($ingredientGroup_ids)) {
+            // Додаємо умову для фільтрації по групам інгредієнтів
+            $sql .= " AND EXISTS (
+                    SELECT 1 
+                    FROM recipe_ingredient ri
+                    JOIN ingredients i ON ri.ingredient_id = i.id
+                    WHERE ri.recipe_id = r.id
+                    AND i.group_id IN (" . implode(',', array_fill(0, count($ingredientGroup_ids), '?')) . ")
+                 )";
+
+            // Додаємо параметри для фільтрації за групами інгредієнтів
+            $params = array_merge($params, $ingredientGroup_ids);
+        }
+    }
+
+
     // Основний метод для отримання рецептів з урахуванням фільтрів
-    public function all($search = '', $sort = 'date_asc', $category_ids = [])
+    public function all($search = '', $sort = 'date_asc', $category_ids = [], $ingredientGroup_ids = [])
     {
         $orderBy = $this->getOrderBy($sort);
 
         // Базовий SQL-запит
-        $sql = "SELECT r.*, c.name as category_name, COUNT(rv.id) AS total_reviews
-                FROM recipes r
-                LEFT JOIN categories c ON r.category_id = c.id
-                LEFT JOIN reviews rv ON rv.recipe_id = r.id
-                WHERE r.title LIKE ?";
+        $sql = "SELECT r.*, c.name as category_name, COUNT(rv.id) AS total_reviews, u.name as user_name, u.id as user_id , CASE 
+                WHEN w.recipe_id IS NOT NULL THEN w.id 
+                ELSE 0 
+            END AS is_in_wishlist
+            FROM recipes r
+            LEFT JOIN categories c ON r.category_id = c.id
+            LEFT JOIN reviews rv ON rv.recipe_id = r.id
+            LEFT JOIN users u ON r.user_id = u.id 
+            LEFT JOIN wishlist w ON r.id = w.recipe_id AND w.user_id = ?
+            WHERE r.title LIKE ?";
 
+        $params[] = $_SESSION['user_id'] ?? null;
         // Параметри для пошукового запиту
-        $params = ["%$search%"];
+        $params[] = "%$search%";
 
         // Додаємо фільтр за категоріями
         $this->buildCategoryFilter($sql, $params, $category_ids);
+
+        // Додаємо фільтр за групами інгредієнтів
+        $this->buildingredientGroupFilter($sql, $params, $ingredientGroup_ids);
 
         // Додаємо групування і сортування
         $sql .= " GROUP BY r.id ORDER BY $orderBy";
@@ -63,6 +94,8 @@ class Recipe
 
         return $query->fetchAll(PDO::FETCH_ASSOC);
     }
+
+
 
 
     public function find($id)
@@ -94,7 +127,7 @@ class Recipe
 
         // Виконання запиту
         if ($stmt->execute()) {
-            return true; // Успішне додавання
+            return $this->db->lastInsertId();; // Успішне додавання
         } else {
             return false; // Помилка
         }
@@ -160,4 +193,6 @@ class Recipe
 
         return $stmt->execute();  // Повертає true, якщо успішно
     }
+
+
 }

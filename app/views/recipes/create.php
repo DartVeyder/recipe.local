@@ -65,7 +65,6 @@
                         <p class="text-danger"><?php echo $errors['category_id']; ?></p>
                     <?php endif; ?>
                 </div>
-                <!-- Список інгредієнтів та кількості -->
                 <div class="form-group mt-3">
                     <label for="ingredients">Інгредієнти</label>
                     <table class="table">
@@ -79,17 +78,18 @@
                         <?php foreach ($ingredients as $ingredient): ?>
                             <tr>
                                 <td>
-                                    <input type="checkbox" name="ingredients[]" value="<?php echo $ingredient['id']; ?>">
-                                    <?php echo htmlspecialchars($ingredient['name']); ?>
+                                    <label for="ingredient_<?php echo $ingredient['id']; ?>"><?php echo htmlspecialchars($ingredient['name']); ?></label>
+                                    <input type="hidden" name="ingredients[<?php echo $ingredient['id']; ?>][id]" value="<?php echo $ingredient['id']; ?>">
                                 </td>
                                 <td>
-                                    <input type="text" name="quantities[<?php echo $ingredient['id']; ?>]" class="form-control" placeholder="Кількість">
+                                    <input type="text" class="form-control" name="ingredients[<?php echo $ingredient['id']; ?>][quantity]" placeholder="Кількість">
                                 </td>
                             </tr>
                         <?php endforeach; ?>
                         </tbody>
                     </table>
                 </div>
+
                 <div class="form-group mt-3">
                     <input hidden type="text" class="form-control" name="user_id" value="<?php echo  $_SESSION['user_id']?>"  >
                 </div>

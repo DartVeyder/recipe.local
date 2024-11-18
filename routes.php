@@ -10,6 +10,10 @@ $routes = [
     'recipes/edit' => ['controller' => 'RecipeController', 'method' => 'edit'],
     'recipes/update' => ['controller' => 'RecipeController', 'method' => 'update'],
 
+    'wishlist/create' => ['controller' => 'WishlistController', 'method' => 'create'],
+    'wishlist/index' => ['controller' => 'WishlistController', 'method' => 'index'],
+    'wishlist/delete' => ['controller' => 'WishlistController', 'method' => 'delete'],
+
     // Маршрути для авторизації та реєстрації
     'auth/register' => ['controller' => 'AuthController', 'method' => 'register'],
     'auth/login' => ['controller' => 'AuthController', 'method' => 'login'],

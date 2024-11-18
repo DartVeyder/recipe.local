@@ -29,4 +29,17 @@ class Ingredient
         return $query->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    public function allGroups()
+    {
+        $query = $this->db->query("SELECT * FROM ingredient_groups");
+        return $query->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function addIngredientToRecipe($recipe_id, $ingredient_id, $quantity)
+    {
+        $sql = "INSERT INTO recipe_ingredient (recipe_id, ingredient_id, quantity) VALUES (?, ?, ?)";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$recipe_id, $ingredient_id, $quantity]);
+    }
+
 }
