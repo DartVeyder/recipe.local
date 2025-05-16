@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="84273fae-61e4-4401-aefd-afb34f310724" name="twice" url="http://twice.com.ua">
+        <fileTransfer rootFolder="/usr/share/nginx/twice.com.ua" accessType="SFTP" host="192.168.100.4" port="22" sshConfigId="7fea7349-b8dc-455a-b20e-ad1e32404dbe" sshConfig="administrator@192.168.100.4:22 password">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

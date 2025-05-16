@@ -10,6 +10,8 @@ $routes = [
     'recipes/edit' => ['controller' => 'RecipeController', 'method' => 'edit'],
     'recipes/update' => ['controller' => 'RecipeController', 'method' => 'update'],
 
+    'api/recipes' => ['controller' => 'ApiRecipeController', 'method' => 'index'],
+
     'wishlist/create' => ['controller' => 'WishlistController', 'method' => 'create'],
     'wishlist/index' => ['controller' => 'WishlistController', 'method' => 'index'],
     'wishlist/delete' => ['controller' => 'WishlistController', 'method' => 'delete'],

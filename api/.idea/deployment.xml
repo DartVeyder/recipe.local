@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PublishConfigData" serverName="twice" remoteFilesAllowedToDisappearOnAutoupload="false">
+    <serverData>
+      <paths name="presta">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/olemark.com/panel/modules/keycrmapp" local="$PROJECT_DIR$/../../../../prestashop modules/keycrmapp" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="twice">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+    </serverData>
+  </component>
+</project>
